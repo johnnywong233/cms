@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/mvc
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--配置视图解析器，方便页面返回  -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    <property name="prefix" value="/WEB-INF/views/"/>
+    <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <constructor-arg value="UTF-8"/>
+            </bean>
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes" value="application/json"/>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <context:component-scan base-package="com.johnny.cms.controller" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--配置拦截器-->
+    <mvc:interceptors>
+        <!--<mvc:interceptor>-->
+        <!--<mvc:mapping path="/**"/>-->
+        <!--<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"/>-->
+        <!--</mvc:interceptor>-->
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.johnny.cms.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- 过滤static目录下面的所有静态资源内容(目的：使拦截器不拦截静态资源)-->
+    <mvc:resources mapping="/static/**" location="/static/"/>
+
+    <!-- 将spring mvc不能处理的请求交给tomcat, 如此处static下面的静态资源，不加这个报错404 ？-->
+    <mvc:default-servlet-handler/>
+
+</beans>

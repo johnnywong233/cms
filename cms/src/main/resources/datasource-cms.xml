@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/tx
+      http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+
+    <bean id="dataSourceCms" class="org.apache.tomcat.jdbc.pool.DataSource">
+        <property name="driverClassName" value="${mysql.driver}"/>
+        <property name="url"
+                  value="jdbc:mysql://${mysql.address.cms}/cms?useUnicode=true&amp;characterEncoding=utf8"/>
+        <property name="username" value="${mysql.username.cms}"/>
+        <property name="password" value="${mysql.password.cms}"/>
+        <property name="initialSize" value="${jdbc.connection.initialSize}"/>
+        <property name="minIdle" value="${jdbc.connection.minIdle}"/>
+        <property name="maxActive" value="${jdbc.connection.maxActive}"/>
+        <property name="maxWait" value="60000"/>
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="defaultTransactionIsolation" value="2"/>
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="true"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="removeAbandoned" value="true"/>
+        <property name="removeAbandonedTimeout" value="600"/>
+        <property name="logAbandoned" value="true"/>
+        <property name="defaultAutoCommit" value="true"/>
+        <property name="jdbcInterceptors" value="ConnectionState;StatementFinalizer"/>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManagerCms"/>
+
+    <bean id="sqlSessionFactoryCms" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSourceCms"/>
+        <property name="mapperLocations" value="classpath*:com/johnny/cms/mapper/*.xml"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <bean id="sqlSessionCms" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactoryCms"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryCms"/>
+        <property name="basePackage" value="com.johnny.cms.mapper"/>
+    </bean>
+
+    <!-- 配置事务 -->
+    <bean id="transactionManagerCms"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSourceCms"/>
+    </bean>
+
+</beans>
